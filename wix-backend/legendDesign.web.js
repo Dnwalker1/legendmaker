@@ -259,7 +259,13 @@ export const LEGEND_PERSONAS = {
 };
 
 // 'monarch' (app), 'legendMonarch' (page) or 'The Monarch' → 'legendMonarch'.
-export function legendPersonaKey(value) {
+// NOT exported, on purpose (found in the first live test, 16 Nov 2026): Wix
+// turns every function a .web.js file exports into a remote call that answers
+// with a Promise, even for another backend file. appBackend.js got a Promise
+// where it expected a key, and crashed. Only webMethods and plain data
+// (objects, strings) are exported from this file; appBackend.js has its own
+// copy of this lookup.
+function legendPersonaKey(value) {
   const v = String(value || '').trim().toLowerCase();
   if (!v) return null;
   for (const [key, p] of Object.entries(LEGEND_PERSONAS)) {

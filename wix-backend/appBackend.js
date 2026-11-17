@@ -24,7 +24,7 @@ import { productsV3 } from '@wix/stores';
 import { reportDesign } from 'backend/designReports';
 import { startPetDesign } from 'backend/aiDesign.web';
 // LEGEND MAKER (added 16 Nov 2026): the second app, portraits of people.
-import { startLegendDesign, LEGEND_PERSONAS, legendPersonaKey, NO_PERSON_NOTE, MINOR_NOTE, CROWD_NOTE as LEGEND_CROWD_NOTE, FAMOUS_NOTE as LEGEND_FAMOUS_NOTE } from 'backend/legendDesign.web';
+import { startLegendDesign, LEGEND_PERSONAS, NO_PERSON_NOTE, MINOR_NOTE, CROWD_NOTE as LEGEND_CROWD_NOTE, FAMOUS_NOTE as LEGEND_FAMOUS_NOTE } from 'backend/legendDesign.web';
 import { createMockupTask, checkMockupTask } from 'backend/printfulMockup.web';
 import { getDesignRecord } from 'backend/petDesigns';
 import { PRODUCTS, getProduct, productListForPage, printSideFor, printSideForWixProductId, wixProductIdFor, DEFAULT_PRODUCT } from 'backend/productCatalog';
@@ -82,6 +82,17 @@ const PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/heic', 'image/heif', 'ima
 // every Legend Maker branch below sits behind isLegendApp() or isLegendDesign().
 function isLegendApp(app) {
   return String(app || '').trim().toLowerCase() === 'legend';
+}
+// 'monarch' (what the app sends), 'legendMonarch' or 'The Monarch' → 'legendMonarch'.
+// Kept here, not imported: a function exported from a .web.js file comes
+// back as a remote call that answers with a Promise, not a value.
+function legendPersonaKey(value) {
+  const v = String(value || '').trim().toLowerCase();
+  if (!v) return null;
+  for (const [key, p] of Object.entries(LEGEND_PERSONAS)) {
+    if (key.toLowerCase() === v || p.appKey === v || p.label.toLowerCase() === v) return key;
+  }
+  return null;
 }
 // A design made by Legend Maker, told by its style (a persona key).
 function isLegendDesign(d) {
