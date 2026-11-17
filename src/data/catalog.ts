@@ -26,7 +26,7 @@ export type DesignStyle = {
   examples?: ImageSourcePropType[];
   /** One line for the gallery: what this persona is. */
   blurb: string;
-  /** True when the design has a place for a name, typeset by the website (never drawn by the AI). */
+  /** True when the design has a banner for a name. The website reads it back and redraws a misspelling. */
   allowsText: boolean;
   /** Example of the name line, shown as the text field's placeholder. */
   textExample?: string;

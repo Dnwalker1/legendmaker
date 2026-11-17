@@ -153,8 +153,8 @@ export default function Style() {
           <Body style={{ fontSize: 14 }}>
             Up to 18 characters. Letters, numbers and ! ? &amp; $ @ + # % , :
             &apos; . - work. Profanity, famous names and trademarks
-            don&apos;t. The name is set in type, so it is spelled exactly as
-            you type it.
+            don&apos;t. We check the spelling on every design before you
+            see it.
           </Body>
         )}
       </View>

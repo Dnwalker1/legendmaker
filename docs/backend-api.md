@@ -1,7 +1,8 @@
 # Legend Maker: what the website must add
 
-**None of this exists on goodwookie.com yet.** Until it does, the app runs on
-its mock backend only.
+**Written, not yet installed.** The three files are in `wix-backend/`, with
+the install steps in `wix-backend/README.md`. Until they are published on
+goodwookie.com, the app runs on its mock backend only.
 
 The app uses the same endpoints as Design Your Pet (below), with these
 differences:
