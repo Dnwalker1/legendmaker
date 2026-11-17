@@ -98,8 +98,10 @@ export const HARM_NOTE = 'Photo rejected: injury, death or violence in the photo
 
 const FRESH = `Use the attached photograph only as a likeness reference for
     one person. Draw a completely new, original illustration of that person
-    from scratch: a new pose, a new costume, a new setting, new light. Nothing
-    of the photograph's own background, clothing or framing is carried over.`;
+    from scratch: a new pose, a new costume, a new setting, new light. The
+    photograph gives the face, the hair and the build, and that is all it
+    gives. Every garment, every colour of clothing, the headwear, the
+    background and the framing come only from the description below.`;
 
 const LIKENESS = `THE LIKENESS. The person in this picture is unmistakably the
     person in the photograph, so that their own family would know them at a
@@ -136,9 +138,16 @@ const HOUSE = `THE HOUSE STYLE. A finished, hand-crafted illustration, drawn
     cream (#D9C8A2), antique gold (#C79A3E), rust (#A85433) and slate
     (#31404C). The person keeps their own true colouring.
 
-    Composition: one finished square design that fills the whole canvas from
-    edge to edge, inside a slim border of ink navy with an antique gold
-    keyline. The person is centred, in the upper two thirds.`;
+    Composition: one finished square design. {EDGE} The person is centred,
+    in the upper two thirds.`;
+
+// THE OUTER EDGE (pinned 16 Nov 2026, after the first live designs). Left to
+// itself the model sometimes set the design on a cream mat, which would print
+// as a cream box on a shirt. A persona may give its own `edge` instead.
+const NAVY_TO_THE_EDGE = `The design fills the whole canvas. Its frame is a
+    band of solid ink navy that runs right out to all four edges of the
+    canvas, so the outermost strip on every side is ink navy, with a slim
+    antique gold keyline set just inside it.`;
 
 function textClause(text) {
   if (text) {
@@ -171,7 +180,8 @@ export const LEGEND_PERSONAS = {
     scene: `THE MONARCH. A grand old-master oil portrait of the person as a
       beloved king or queen. They wear a golden crown set with coloured
       stones, a deep crimson velvet robe with a wide white fur collar, and a
-      gold chain of office over a rich embroidered tunic or gown. One hand
+      gold chain of office over a crimson tunic or gown heavily embroidered
+      in gold. One hand
       rests on the pommel of a ceremonial sceptre. Behind them hang heavy
       draped curtains and a carved stone column, lit by warm window light.`
   },
@@ -227,7 +237,13 @@ export const LEGEND_PERSONAS = {
       hat pushed back so the face is clear, a plain bandana at the neck, a
       canvas duster coat over a waistcoat. Behind them a desert mesa and a
       low sun. The paper around the portrait carries ornamental woodcut
-      corners and rules.`
+      corners and rules.`,
+    // The paper is the design. Pure white around it is cleared afterwards,
+    // so the sheet prints with its own ragged edge.
+    edge: `The design is one sheet of aged cream paper with worn, ragged
+      edges, lying flat and square to the viewer on a plain, pure white
+      background, with a thin even strip of that white showing on all four
+      sides.`
   },
   legendChef: {
     appKey: 'chef', label: 'Head Chef', allowsText: true,
@@ -283,7 +299,7 @@ function buildPrompt(personaKey, text, notes) {
     LIKENESS.replace('{NOTES}', noteLine),
     INVENTED_WORLD,
     ALIVE_AND_WELL,
-    HOUSE
+    HOUSE.replace('{EDGE}', p.edge || NAVY_TO_THE_EDGE)
   ].join('\n\n    ') + textClause(p.allowsText ? text : '');
 }
 
