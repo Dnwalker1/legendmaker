@@ -1,0 +1,71 @@
+{
+  "expo": {
+    "name": "Legend Maker",
+    "slug": "legend-maker",
+    "scheme": "legendmaker",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.goodwookie.legendmaker",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.goodwookie.legendmaker",
+      "adaptiveIcon": {
+        "backgroundColor": "#EFE3C6",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#16202A"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Legend Maker uses your photos so you can pick a picture to turn into a portrait.",
+          "cameraPermission": "Legend Maker uses the camera so you can take a picture to turn into a portrait.",
+          "microphonePermission": false
+        }
+      ],
+      "expo-web-browser",
+      "expo-font",
+      "expo-image",
+      "expo-status-bar"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "privacyPolicyUrl": "https://www.goodwookie.com/privacy-policy",
+      "termsUrl": "https://www.goodwookie.com/terms-and-conditions",
+      "shippingUrl": "https://www.goodwookie.com/shipping-and-returns",
+      "supportEmail": "info@goodwookie.com",
+      "router": {},
+      "deleteAccountUrl": "https://www.goodwookie.com/delete-account"
+    },
+    "owner": "goodwookies-team",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    }
+  }
+}
