@@ -24,7 +24,7 @@ import { productsV3 } from '@wix/stores';
 import { reportDesign } from 'backend/designReports';
 import { startPetDesign } from 'backend/aiDesign.web';
 // LEGEND MAKER (added 16 Nov 2026): the second app, portraits of people.
-import { startLegendDesign, LEGEND_PERSONAS, NO_PERSON_NOTE, MINOR_NOTE, CROWD_NOTE as LEGEND_CROWD_NOTE, FAMOUS_NOTE as LEGEND_FAMOUS_NOTE } from 'backend/legendDesign.web';
+import { startLegendDesign, LEGEND_PERSONAS } from 'backend/legendDesign.web';
 import { createMockupTask, checkMockupTask } from 'backend/printfulMockup.web';
 import { getDesignRecord } from 'backend/petDesigns';
 import { PRODUCTS, getProduct, productListForPage, printSideFor, printSideForWixProductId, wixProductIdFor, DEFAULT_PRODUCT } from 'backend/productCatalog';
@@ -587,7 +587,7 @@ export async function getDesignForApp(visitorId, designId) {
       status = Date.now() - new Date(d._createdDate).getTime() > STUCK_AFTER_MS ? 'failed' : 'working';
       break;
     case 'blocked':
-      if (isLegendDesign(d) && note === NO_PERSON_NOTE) status = 'no_person';
+      if (isLegendDesign(d) && /^No clear face/i.test(note)) status = 'no_person';
       else if (note === 'No animal in the photo.') status = 'no_pet';
       else if (note === 'Gemini returned no image.') status = 'failed';
       else status = 'photo_rejected';
@@ -603,10 +603,13 @@ export async function getDesignForApp(visitorId, designId) {
   // child | famous | too_many | content
   let reason = null;
   if (status === 'photo_rejected' && isLegendDesign(d)) {
-    // Legend Maker: minor | famous | too_many | content
-    reason = note === MINOR_NOTE ? 'minor'
-      : note === LEGEND_FAMOUS_NOTE ? 'famous'
-      : note === LEGEND_CROWD_NOTE ? 'too_many'
+    // Legend Maker: minor | famous | too_many | content. Read from the note's
+    // wording, as for pets, not from strings imported from the .web.js file:
+    // that file's exports reach other backend files through Wix's remote-call
+    // wrapper, so a plain import is not guaranteed to arrive as a value.
+    reason = /someone under 18/i.test(note) ? 'minor'
+      : /well-known person/i.test(note) ? 'famous'
+      : /more than one person/i.test(note) ? 'too_many'
       : 'content';
   } else if (status === 'photo_rejected') {
     reason = /child in the photo/i.test(note) ? 'child'

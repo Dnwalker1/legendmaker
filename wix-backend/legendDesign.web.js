@@ -214,20 +214,25 @@ export const LEGEND_PERSONAS = {
   },
   legendAstronaut: {
     appKey: 'astronaut', label: 'Astronaut', allowsText: true,
-    scene: `THE ASTRONAUT. A mission-poster illustration of the person as a
-      space commander ready for launch. They wear a white and slate space
-      suit with plain gold trim and a single original star emblem on the
-      shoulder, and carry the helmet under one arm so the face is fully
-      seen. Behind them a tall rocket stands on its pad at dawn, under a sky
-      turning from navy to gold with the first stars still showing.`
+    scene: `THE ASTRONAUT. A bold illustration in the spirit of a classic
+      space-mission poster, painted right out to the frame, of the person as
+      a space commander ready for launch. They wear a white and slate space
+      suit with plain gold trim, a single original star emblem on one
+      shoulder and no other patches, flags or insignia, and carry the
+      helmet under one arm so the face is fully seen. Behind them, on its
+      pad at dawn, stands one tall, slim rocket of an invented design: a
+      single smooth silver and gold spire with three swept fins at its
+      base, like a rocket from a storybook. The sky turns from navy to gold
+      with the first stars still showing.`
   },
   legendActionHero: {
     appKey: 'hero', label: 'Action Hero', allowsText: true,
     scene: `THE ACTION HERO. A bold comic-cover illustration of the person as
       an original caped hero. They wear a fitted suit in ink navy with rust
       and gold panels, a flowing rust cape, and one simple gold flame emblem
-      on the chest. Face uncovered, fists on hips, they stand on a rooftop
-      above a city at sunset, the cape lifting in the wind.`
+      on the chest. Shown from the waist up and close, so the face is large,
+      clear and uncovered: fists on hips, standing on a rooftop above a city
+      at sunset, the cape lifting in the wind behind their shoulders.`
   },
   legendOutlaw: {
     appKey: 'outlaw', label: 'Western Legend', allowsText: true,
@@ -256,8 +261,9 @@ export const LEGEND_PERSONAS = {
   },
   legendExplorer: {
     appKey: 'explorer', label: 'Explorer', allowsText: true,
-    scene: `THE EXPLORER. A vintage expedition-poster illustration of the
-      person at the summit. They wear a waxed canvas jacket, a wool scarf
+    scene: `THE EXPLORER. A bold illustration in the spirit of a classic
+      expedition poster, painted right out to the frame, of the person at
+      the summit. They wear a waxed canvas jacket, a wool scarf
       and a canvas rucksack with leather straps, one hand on a wooden
       walking staff. Behind and below them, ranges of blue mountains roll
       away under a huge golden sunrise, with a river winding through the
@@ -533,7 +539,10 @@ async function runLegendGeneration(designRecordId, publicPhotoUrl, personaKey, r
 
   const prompt = buildPrompt(personaKey, text, photoCheck.describe);
   const maxTries = RETRY_ONCE ? 2 : 1;
-  let art = null, problem = null, drawings = 0;
+  let art = null, problem = null, drawings = 0, edgeLight = false;
+  // A first drawing whose only fault is a light edge is kept here, so a
+  // redraw for the edge can never cost the customer a design.
+  let lightEdgeFallback = null;
 
   // 1. Draw it, then check it. A picture that fails a check is drawn again
   //    from the photo, once, silently. The customer never sees the bad one.
@@ -560,10 +569,24 @@ async function runLegendGeneration(designRecordId, publicPhotoUrl, personaKey, r
 
     // 1b. Alive and well (fails CLOSED), and the right figure with no brand
     //     marks or stray lettering (fails open). Asked at the same time.
+    // 1c. THE EDGE (19 Nov 2026). A light mat round the design prints as a
+    //     pale box on a shirt. Worth one silent redraw, never worth losing a
+    //     design: on the last attempt a light edge is accepted and noted.
+    //     Personas with their own edge (the Western Legend's paper) skip it.
+    edgeLight = false;
     if (!problem) {
-      const [harm, figure] = await Promise.all([harmCheck(apiKey, inline), figureCheck(apiKey, inline, text)]);
+      const edge = { wrong: false };
+      const checkEdge = !LEGEND_PERSONAS[personaKey].edge;
+      const [harm, figure] = await Promise.all([harmCheck(apiKey, inline), figureCheck(apiKey, inline, text, checkEdge ? edge : null)]);
       if (harm) problem = `The design showed injury, death or violence (${harm}).`;
       else if (figure) problem = `The portrait didn't come out right (${figure}).`;
+      else if (edge.wrong) {
+        edgeLight = true;
+        if (attempt < maxTries) {
+          problem = 'The outer edge came out light, not navy.';
+          lightEdgeFallback = art;
+        }
+      }
     }
 
     if (!problem) break;
@@ -571,6 +594,15 @@ async function runLegendGeneration(designRecordId, publicPhotoUrl, personaKey, r
   }
 
   const genSeconds = Math.round((Date.now() - startedAt) / 1000);
+
+  // The redraw for the edge failed a real check: fall back to the first
+  // drawing, light edge and all.
+  if (problem && lightEdgeFallback) {
+    console.warn(`Legend design ${designRecordId}: redraw failed (${problem}); keeping the first drawing.`);
+    art = lightEdgeFallback;
+    problem = null;
+    edgeLight = true;
+  }
 
   // 2. Both tries failed. Not shown, and it doesn't count toward the 5.
   if (problem) {
@@ -649,7 +681,7 @@ async function runLegendGeneration(designRecordId, publicPhotoUrl, personaKey, r
     generatedArtUrl,
     previewArtUrl,
     status: verdict.flagged ? 'flagged' : 'ready',
-    moderationNote: [verdict.note, cleanNote, `[${drawings} drawn, ${Math.round((Date.now() - startedAt) / 1000)}s]`].filter(Boolean).join(' | ')
+    moderationNote: [verdict.note, cleanNote, edgeLight ? 'Light outer edge accepted.' : '', `[${drawings} drawn, ${Math.round((Date.now() - startedAt) / 1000)}s]`].filter(Boolean).join(' | ')
   });
 
   console.log(`Legend design ${designRecordId} finished in ${Math.round((Date.now() - startedAt) / 1000)}s (Gemini ${genSeconds}s).`);
@@ -751,16 +783,30 @@ async function checkPersonPhoto(apiKey, photo) {
     return unavailable;
   }
 
-  if (v.reject === true) return { reject: true, reason: v.reason || 'unsuitable photo' };
-  // Missing or odd answers count against the photo from here down.
-  if (v.harm !== false) return { reject: true, reason: 'injury, death or violence', note: HARM_NOTE };
-
   const n = Number(v.people);
   const people = Number.isFinite(n) ? Math.max(Math.round(n), 0) : 0;
-  if (people < 1 || v.faceClear !== true) return { reject: true, reason: 'no clear face', note: NO_PERSON_NOTE };
-  if (v.minor !== false) return { reject: true, reason: `someone under ${MIN_AGE}`, note: MINOR_NOTE };
+
+  // THE SPECIFIC ANSWERS FIRST (19 Nov 2026). The live test showed the
+  // checker also sets its catch-all "reject" for a child, a famous face or an
+  // empty photo. Tested first, that catch-all hid the reason, and every
+  // customer got the vague sentence instead of the one that says what to
+  // change. Every photo refused before is still refused: only the order of
+  // the tests changed.
+  if (v.harm === true) return { reject: true, reason: 'injury, death or violence', note: HARM_NOTE };
+  if (v.minor === true) return { reject: true, reason: `someone under ${MIN_AGE}`, note: MINOR_NOTE };
+  if (v.famous === true) return { reject: true, reason: 'well-known person', note: FAMOUS_NOTE };
+  if (Number.isFinite(n) && people === 0) return { reject: true, reason: 'no clear face', note: NO_PERSON_NOTE };
   if (people > 1) return { reject: true, reason: 'more than one person', note: CROWD_NOTE };
+  if (v.faceClear === false) return { reject: true, reason: 'no clear face', note: NO_PERSON_NOTE };
+
+  // Then the catch-all: nudity, hate symbols and the rest.
+  if (v.reject === true) return { reject: true, reason: v.reason || 'unsuitable photo' };
+
+  // Missing or odd answers still count against the photo.
+  if (v.harm !== false) return { reject: true, reason: 'injury, death or violence', note: HARM_NOTE };
+  if (v.minor !== false) return { reject: true, reason: `someone under ${MIN_AGE}`, note: MINOR_NOTE };
   if (v.famous !== false) return { reject: true, reason: 'well-known person', note: FAMOUS_NOTE };
+  if (people !== 1 || v.faceClear !== true) return { reject: true, reason: 'no clear face', note: NO_PERSON_NOTE };
 
   // Our own checker's words, but they go into a prompt, so they are cleaned
   // the way a customer's text is.
@@ -800,6 +846,12 @@ async function checkLegendText(apiKey, text) {
       is a name: accept it. When in doubt about a plain unusual name, accept
       it.
 
+      Also accept short proud phrases made of ordinary words, numbers and
+      years, such as SUMMIT 2027, CLASS OF 1985, EST. 1972, BASE CAMP,
+      HOMETOWN HERO or MISSION ONE, and the name of a real town, county,
+      state, mountain or river. A year or a number on its own is not a
+      phone number.
+
       The text is: "${text}"`);
     return { reject: v.reject === true, reason: v.reason || 'unsuitable text' };
   } catch (e) {
@@ -833,13 +885,17 @@ async function harmCheck(apiKey, inline) {
 // league marks; no lettering except the name asked for. Returns a short
 // reason, or null when it's fine or the check can't run (fails open: the
 // second opinion below still flags anything doubtful for Don).
-async function figureCheck(apiKey, inline, expectedText) {
+async function figureCheck(apiKey, inline, expectedText, edgeOut) {
   try {
     const v = await askChecker(apiKey, `This illustration is a portrait of
       one adult, made to be printed and sold. Reply with strict JSON only:
       {"people": <number>, "looksUnder18": true|false, "brandMark": true|false,
       "otherText": "<any readable words or letters, or empty string>",
+      "edgeIsDark": true|false,
       "reason": "short reason or empty string"}.
+      "edgeIsDark" is true if the outermost strip of the picture, along all
+      four sides, is dark navy blue or empty transparency; false if any side
+      ends in cream, white, paper or a light mat around the design.
       "people" is how many people are drawn as subjects (a distant crowd of
       tiny background figures is not counted).
       "looksUnder18" is true if the main person looks like a child or a
@@ -857,6 +913,7 @@ async function figureCheck(apiKey, inline, expectedText) {
     if (v.brandMark === true) return `a brand or team mark: ${String(v.reason || '').slice(0, 80)}`;
     const other = String(v.otherText || '').trim();
     if (other) return `stray lettering: ${other.slice(0, 60)}`;
+    if (edgeOut && v.edgeIsDark === false) edgeOut.wrong = true;
     return null;
   } catch (e) {
     console.warn(`Legend figure check couldn't run: ${e.message}`);
