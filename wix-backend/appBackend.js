@@ -27,7 +27,7 @@ import { startPetDesign } from 'backend/aiDesign.web';
 import { startLegendDesign, LEGEND_PERSONAS } from 'backend/legendDesign.web';
 import { createMockupTask, checkMockupTask } from 'backend/printfulMockup.web';
 import { getDesignRecord } from 'backend/petDesigns';
-import { PRODUCTS, getProduct, productListForPage, printSideFor, printSideForWixProductId, wixProductIdFor, DEFAULT_PRODUCT } from 'backend/productCatalog';
+import { PRODUCTS, getProduct, productListForPage, printSideFor, printSideForWixProductId, wixProductIdFor, DEFAULT_PRODUCT, DEFAULT_LEGEND_PRODUCT, catalogKeyFor, appOfProduct } from 'backend/productCatalog';
 import { findWixVariantId } from 'backend/wixProduct';
 import { PRINTFUL_BASE, printfulHeaders } from 'backend/printfulShared';
 
@@ -97,6 +97,20 @@ function legendPersonaKey(value) {
 // A design made by Legend Maker, told by its style (a persona key).
 function isLegendDesign(d) {
   return !!(d && LEGEND_PERSONAS[d.styleChoice]);
+}
+// The product a design may be printed on. A Legend Maker design goes only on
+// Legend Maker products, and the app calls them 'tee', 'poster', 'canvas'...
+// A pet design goes only on pet products, looked up exactly as before.
+// Throws with a plain reason; callers turn that into bad_product.
+function productForDesign(d, productKey) {
+  if (isLegendDesign(d)) {
+    const key = productKey ? catalogKeyFor('legend', productKey) : DEFAULT_LEGEND_PRODUCT;
+    if (!key) throw new Error(`Legend Maker doesn't sell "${productKey}".`);
+    return getProduct(key);
+  }
+  const p = getProduct(productKey);
+  if (appOfProduct(p) !== 'pet') throw new Error(`Design Your Pet doesn't sell "${productKey}".`);
+  return p;
 }
 // The display name of any design's style, pet or person.
 function styleLabelOf(d) {
@@ -275,10 +289,12 @@ async function loadPrices(wixProductId) {
 
 export async function getProductsForApp(app) {
   const products = [];
-  for (const p of productListForPage()) {
+  const legend = isLegendApp(app);
+  for (const p of productListForPage(legend ? 'legend' : undefined)) {
     const entry = PRODUCTS[p.value];
     const out = {
-      key: p.value,
+      // Legend Maker's app knows its products by their short names.
+      key: legend ? (entry.appKey || p.value) : p.value,
       label: p.label,
       colors: p.colors,              // null for sticker and poster
       sizes: p.sizes,
@@ -331,7 +347,7 @@ export async function getProductsForApp(app) {
   return {
     ok: true,
     products,
-    defaultProduct: DEFAULT_PRODUCT,
+    defaultProduct: legend ? PRODUCTS[DEFAULT_LEGEND_PRODUCT].appKey : DEFAULT_PRODUCT,
     styles: isLegendApp(app)
       ? Object.entries(LEGEND_PERSONAS).map(([key, p]) => ({
           key: p.appKey, styleKey: key, label: p.label, allowsText: p.allowsText
@@ -680,7 +696,7 @@ export async function startMockup(visitorId, body) {
   if (!d || !previewOf(d)) return fail('not_found', 'We couldn\'t find that design.');
 
   let product;
-  try { product = getProduct(body?.productKey); }
+  try { product = productForDesign(d, body?.productKey); }
   catch (e) { return fail('bad_product', e.message); }
 
   const color = product.colors ? String(body?.color || product.defaultColor) : '';
@@ -741,7 +757,7 @@ export async function createAppCheckout(visitorId, body) {
     }
 
     let product;
-    try { product = getProduct(item.productKey); }
+    try { product = productForDesign(d, item.productKey); }
     catch (e) { return fail('bad_product', e.message, { index: i }); }
 
     // Colour and size are matched loosely (12 Nov 2026): the app writes a

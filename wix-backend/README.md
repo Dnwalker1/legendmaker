@@ -60,6 +60,34 @@ pasting if either has changed since 16 Nov.
 4. Point the app at the site (`EXPO_PUBLIC_API_BASE_URL`, see `src/api/`) and
    make a design with a photo of yourself.
 
+## Legend Maker products (added 19 Nov 2026)
+
+Four more files carry the products. Replace each whole file, then publish:
+
+| File | Change |
+|---|---|
+| `productCatalog.js` | Legend Maker tee, hoodie, poster (12×16, 18×24) and canvas (12×16), marked `app: 'legend'`. Each app and page sees only its own products. |
+| `printfulShared.js` | Portrait art on posters and canvas (Printful hands their print areas back landscape); the canvas art covers the front and leaves the wrap plain; a Printful catalog lookup. |
+| `appBackend.js` | A Legend Maker design goes only on Legend Maker products, and a pet design only on pet products. |
+| `http-functions.js` | `GET /_functions/printfulVariants/<id>`, to read a Printful product's variant IDs. |
+
+The new products stay hidden until their `PASTE_..._ID` placeholders are
+replaced with real Wix product IDs, and the canvas until its Printful
+variant ID replaces the 0.
+
+Checked offline (`tests/placements.test.mjs`): every pet product's print
+files, front and back, mockup and order, are byte-for-byte what the old
+code produced, and the pet product list is unchanged.
+
+Placements, as print-area pixels at Printful's sizes:
+
+| Product | Art |
+|---|---|
+| Tee | 10.5 in wide x 14 in tall, 1 in below the top of the 12x16 front |
+| Hoodie | 8.25 in wide x 11 in tall, inside the 12x12 front, ending at the pocket |
+| Poster 12x16, 18x24 | fills the sheet |
+| Canvas 12x16 | covers the 12x16 front; the wrap round the sides prints white |
+
 ## Known limits
 
 - Artwork is square. Portrait formats need product work as well.

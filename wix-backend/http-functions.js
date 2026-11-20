@@ -29,6 +29,7 @@ import {
   startMockup, getMockup, createAppCheckout, getCheckoutResult, listOrdersForApp, reportDesignForApp,
   updateOrderAddressForApp,
 } from 'backend/appBackend';
+import { listPrintfulVariants } from 'backend/printfulShared';
 
 // ── plumbing ────────────────────────────────────────────────────────────────
 
@@ -133,6 +134,13 @@ export function get_orders(request) {
 // https://www.goodwookie.com/_functions/ping in a browser after publishing.
 export function get_ping(request) {
   return send({ ok: true, service: 'Design Your Pet app API', time: new Date().toISOString() });
+}
+
+// Every variant of a Printful catalog product, to fill in productCatalog.js
+// (added 19 Nov 2026 for the Legend Maker canvas). Public catalog data only.
+//   GET /_functions/printfulVariants/3
+export function get_printfulVariants(request) {
+  return handle(request, false, async () => ({ ok: true, ...(await listPrintfulVariants((request.path || [])[0])) }));
 }
 
 // Report a design.  Body: { designId, reason }

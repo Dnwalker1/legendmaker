@@ -56,7 +56,7 @@ async function getPrintAreas(printfulProductId, variantId, headers) {
   const areas = {};
   for (const [name, printfileId] of Object.entries(variant?.placements || {})) {
     const pf = printfiles.find(p => p.printfile_id === printfileId);
-    if (pf) areas[name] = { width: pf.width, height: pf.height, dpi: pf.dpi || 150 };
+    if (pf) areas[name] = { width: pf.width, height: pf.height, dpi: pf.dpi || 150, canRotate: pf.can_rotate === true };
   }
   return areas;
 }
@@ -114,6 +114,46 @@ function placeInches(area, ratio, spec, what) {
   const middle = area.width / 2 + Math.round((spec.centerOffsetIn || 0) * dpi);
   const left = Math.max(0, Math.min(area.width - width, Math.round(middle - width / 2)));
   return { area_width: area.width, area_height: area.height, width, height, top, left };
+}
+
+// LEGEND MAKER CANVAS (added 19 Nov 2026). The canvas print file includes the
+// wrap round the sides. The art is sized to the canvas FRONT (faceWidthIn for
+// this size, in inches) and centred, so it covers the front exactly and the
+// wrap is left plain. Shrinks to stay inside the area.
+function facePlacement(area, ratio, product, size) {
+  if (!area) throw new Error('Printful did not return the print area for this canvas.');
+  const faceIn = product.faceWidthIn && product.faceWidthIn[size];
+  if (!faceIn) throw new Error(`No faceWidthIn for ${product.label} ${size} in productCatalog.js.`);
+  const dpi = area.dpi || 150;
+  let width = Math.min(area.width, Math.round(faceIn * dpi));
+  let height = Math.round(width / ratio);
+  if (height > area.height) { height = area.height; width = Math.round(height * ratio); }
+  return {
+    area_width: area.width, area_height: area.height, width, height,
+    top: Math.round((area.height - height) / 2), left: Math.round((area.width - width) / 2)
+  };
+}
+
+// A portrait design on a print area Printful hands back landscape (posters and
+// canvas come back 4800 x 3600 and marked rotatable) would be fitted small in
+// the middle. Turn the area to match the art. Square art (every pet design)
+// never matches either test, so pet products are untouched.
+function matchOrientation(area, ratio) {
+  if (!area || !area.canRotate) return area;
+  const artTall = ratio < 1, areaTall = area.height > area.width;
+  const artWide = ratio > 1, areaWide = area.width > area.height;
+  if ((artTall && areaWide) || (artWide && areaTall)) {
+    return { ...area, width: area.height, height: area.width };
+  }
+  return area;
+}
+
+// The size name for a Printful variant, from the product's own table.
+function sizeForVariant(product, variantId) {
+  for (const sizes of Object.values(product.variants || {})) {
+    for (const [size, id] of Object.entries(sizes)) if (id === variantId) return size;
+  }
+  return null;
 }
 
 // Biggest fit of an image with shape `ratio` (width ÷ height) inside an area.
@@ -363,6 +403,21 @@ export async function buildMugPrintFile(artUrl, area, product) {
   return url;
 }
 
+// Every variant of a Printful catalog product: id, size, colour. Public
+// catalog data, read once to fill in productCatalog.js (added 19 Nov 2026 for
+// the canvas). Called by GET /_functions/printfulVariants/<productId>.
+export async function listPrintfulVariants(printfulProductId) {
+  const id = parseInt(printfulProductId, 10);
+  if (!(id > 0)) throw new Error('Give a Printful product number, e.g. 3 for the canvas.');
+  const resp = await fetch(`${PRINTFUL_BASE}/products/${id}`, { method: 'GET', headers: await printfulHeaders() });
+  const json = await resp.json();
+  if (!resp.ok) throw new Error(`Printful catalog error: ${json.error?.message || json.result}`);
+  return {
+    product: json.result?.product?.title || '',
+    variants: (json.result?.variants || []).map(v => ({ id: v.id, size: v.size, color: v.color || '', name: v.name }))
+  };
+}
+
 // ── PREVIEWS WE DRAW OURSELVES (added 14 Nov 2026) ─────────────────────────
 // Printful's product-photo generator doesn't cover the ornament or the mug,
 // so holidayPreview.web.js asks for these instead.
@@ -473,7 +528,9 @@ export async function buildPrintFiles(artUrl, variantId, headers, style, product
     throw new Error(`Printful has no "${product.placement}" print area for ${product.label}. It offers: ${names.join(', ') || 'none'}.`);
   }
 
-  const ratio = await imageRatio(artUrl, 1);
+  // Read from the file itself; if that can't be done, the product's own shape
+  // (3:4 for Legend Maker, square for pets).
+  const ratio = await imageRatio(artUrl, product.artRatio || 1);
 
   if (side === 'Back') {
     // Printful prints the first placement free and charges for the second, so
@@ -497,13 +554,19 @@ export async function buildPrintFiles(artUrl, variantId, headers, style, product
       url: mugUrl,
       position: { area_width: mainArea.width, area_height: mainArea.height, width: mainArea.width, height: mainArea.height, top: 0, left: 0 }
     };
+  } else if (product.layout === 'face') {
+    main = {
+      placement: product.placement,
+      url: artUrl,
+      position: facePlacement(matchOrientation(mainArea, ratio), ratio, product, sizeForVariant(product, variantId))
+    };
   } else {
     main = {
       placement: product.placement,
       url: artUrl,
       position: product.layout === 'chest'
         ? chestPlacement(mainArea, ratio, product)
-        : fitInArea(mainArea, ratio, 'center', product.fitScale, product.fitCenterX, product.fitCenterY)
+        : fitInArea(matchOrientation(mainArea, ratio), ratio, 'center', product.fitScale, product.fitCenterX, product.fitCenterY)
     };
   }
   const list = [main];

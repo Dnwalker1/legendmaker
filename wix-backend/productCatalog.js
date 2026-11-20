@@ -1,5 +1,5 @@
 // backend/productCatalog.js
-// Every product Design Your Pet can print on, in one place. Data only — no
+// Every product Design Your Pet AND Legend Maker can print on, in one place. Data only — no
 // network calls — so every other backend file can import it safely.
 //
 // Adding a product later = adding one entry here, plus the matching hidden
@@ -49,6 +49,19 @@
 //                     the mug: { widthShare, heightShare, centerX }.
 //   ownPreview        true = Printful can't make a product photo of it, so
 //                     the page shows a picture built by holidayPreview.web.js.
+//
+// LEGEND MAKER (added 19 Nov 2026)
+//   app               'legend' = a Legend Maker product. Left off = Design Your
+//                     Pet. Each app and page is only ever offered its own
+//                     products (productListForPage below).
+//   appKey            what the Legend Maker app calls the product ('tee',
+//                     'hoodie', 'poster', 'canvas'). appBackend.js translates.
+//   artRatio          width ÷ height of the art, used when the art file's own
+//                     size can't be read. Legend Maker art is 3:4 (0.75). Left
+//                     off = 1, square, as every pet design is.
+//   faceWidthIn       ('face' layout, canvas) { size: inches } the width of
+//                     the canvas FRONT, so the art covers the front exactly
+//                     and the wrap round the sides is left plain.
 // ───────────────────────────────────────────────────────────────────────────
 
 // Printful catalog variant IDs for the Christmas products. Read from
@@ -231,10 +244,134 @@ export const PRODUCTS = {
     backLogo: { widthShare: 0.30, heightShare: 0.55, centerX: 0.25 },
     ownPreview: true,
     sleeveLogo: false
+  },
+
+  // ── LEGEND MAKER (added 19 Nov 2026) ──────────────────────────────────────
+  // 3:4 portrait art. Made in Printful and pushed to Wix like the pet
+  // products, each with the "Design ID" text box. Until a product's Wix ID
+  // replaces its PASTE_ placeholder, it is hidden everywhere and can't be sold.
+  // Costs and suggested prices: legend-maker-products.xlsx (19 Nov).
+
+  legendTee: {
+    app: 'legend', appKey: 'tee',
+    label: 'T-Shirt',
+    wixProductId: 'PASTE_LEGEND_TEE_ID',                     // "Legend Maker Tee"
+    printfulProductId: 71,                                   // Bella+Canvas 3001
+    colors: ['White', 'Natural', 'Ash', 'Heather Dust', 'Athletic Heather'],
+    sizes: ['S', 'M', 'L', 'XL', '2XL', '3XL'],
+    defaultColor: 'White',
+    defaultSize: 'L',
+    variants: {
+      'White':            { S: 4011,  M: 4012,  L: 4013,  XL: 4014,  '2XL': 4015,  '3XL': 5294 },
+      'Natural':          { S: 14682, M: 14683, L: 14684, XL: 14685, '2XL': 14686, '3XL': 14687 },
+      'Ash':              { S: 4026,  M: 4027,  L: 4028,  XL: 4029,  '2XL': 4030,  '3XL': 8447 },
+      'Heather Dust':     { S: 10360, M: 10361, L: 10362, XL: 10363, '2XL': 10364, '3XL': 10365 },
+      'Athletic Heather': { S: 6948,  M: 6949,  L: 6950,  XL: 6951,  '2XL': 6952,  '3XL': 6953 }
+    },
+    placement: 'front',
+    layout: 'chest',
+    artRatio: 0.75,
+    // 3:4 art 10.5" wide is 14" tall: 1" below the top of the 12" x 16" front
+    // print area, it ends 1" above the bottom. Adjust after the first mockups.
+    frontWidthIn: 10.5,
+    frontTopIn: 1.0,
+    sleeveLogo: true
+  },
+
+  legendHoodie: {
+    app: 'legend', appKey: 'hoodie',
+    label: 'Hoodie',
+    wixProductId: 'PASTE_LEGEND_HOODIE_ID',                  // "Legend Maker Hoodie"
+    printfulProductId: 380,                                  // Cotton Heritage M2580 Premium Pullover
+    colors: ['White', 'Bone', 'Oatmeal Heather', 'Khaki', 'Light Pink', 'Lavender',
+             'Sky Blue', 'Carolina Blue', 'Carbon Grey'],
+    sizes: ['S', 'M', 'L', 'XL', '2XL', '3XL'],
+    defaultColor: 'White',
+    defaultSize: 'L',
+    variants: {
+      'White':           { S: 10774, M: 10775, L: 10776, XL: 10777, '2XL': 10778, '3XL': 13421 },
+      'Bone':            { S: 20284, M: 20285, L: 20286, XL: 20287, '2XL': 20288, '3XL': 20289 },
+      'Oatmeal Heather': { S: 24975, M: 24976, L: 24977, XL: 24978, '2XL': 24979, '3XL': 24980 },
+      'Khaki':           { S: 13899, M: 13900, L: 13901, XL: 13902, '2XL': 13903, '3XL': 13904 },
+      'Light Pink':      { S: 24993, M: 24994, L: 24995, XL: 24996, '2XL': 24997, '3XL': 24998 },
+      'Lavender':        { S: 25005, M: 25006, L: 25007, XL: 25008, '2XL': 25009, '3XL': 25010 },
+      'Sky Blue':        { S: 13917, M: 13918, L: 13919, XL: 13920, '2XL': 13921, '3XL': 13922 },
+      'Carolina Blue':   { S: 11496, M: 11497, L: 11498, XL: 11499, '2XL': 11500, '3XL': 13422 },
+      'Carbon Grey':     { S: 10784, M: 10785, L: 10786, XL: 10787, '2XL': 10788, '3XL': 13420 }
+    },
+    placement: 'front',
+    layout: 'chest',
+    artRatio: 0.75,
+    // THE SQUARE FRONT (Don, 19 Nov). The hoodie's front print area is 12" x
+    // 12", ending just above the pocket. The whole 3:4 design is fitted inside
+    // it: 8.25" wide x 11" tall, 1" below the top, so it ends at the pocket
+    // like the pet design does, with plain fabric either side.
+    frontWidthIn: 8.25,
+    frontTopIn: 1.0,
+    sleeveLogo: true,
+    sleeveAlign: 'top'
+  },
+
+  legendPoster: {
+    app: 'legend', appKey: 'poster',
+    label: 'Poster',
+    wixProductId: 'PASTE_LEGEND_POSTER_ID',                  // "Legend Maker Poster"
+    printfulProductId: 1,                                    // Enhanced Matte Paper Poster (in)
+    colors: null,
+    // Spelled exactly as the Wix product's Size choices, with the × sign.
+    sizes: ['12×16', '18×24'],
+    defaultSize: '12×16',
+    variants: {
+      '': { '12×16': 1349, '18×24': 1 }
+    },
+    placement: 'default',
+    layout: 'fill',
+    artRatio: 0.75,
+    sleeveLogo: false
+  },
+
+  legendCanvas: {
+    app: 'legend', appKey: 'canvas',
+    label: 'Canvas',
+    wixProductId: 'PASTE_LEGEND_CANVAS_ID',                  // "Legend Maker Canvas"
+    printfulProductId: 3,                                    // Canvas (in)
+    colors: null,
+    sizes: ['12×16'],
+    defaultSize: '12×16',
+    // The Printful variant ID is still to be read from Printful's catalog
+    // (GET /_functions/printfulVariants/3). 0 keeps the canvas hidden.
+    variants: {
+      '': { '12×16': 0 }
+    },
+    placement: 'default',
+    // The print file includes the wrap round the sides. The art covers the
+    // 12" front exactly; the wrap is left plain (white).
+    layout: 'face',
+    faceWidthIn: { '12×16': 12 },
+    artRatio: 0.75,
+    sleeveLogo: false
   }
 };
 
+// Which app a product belongs to: 'legend' or 'pet'.
+export function appOfProduct(p) {
+  return p && p.app === 'legend' ? 'legend' : 'pet';
+}
+
+// The catalog key for what an app calls a product. Legend Maker says 'tee'
+// and means legendTee; Design Your Pet's keys are the catalog's own. Returns
+// null for a product the app doesn't sell.
+export function catalogKeyFor(app, appKey) {
+  const want = app === 'legend' ? 'legend' : 'pet';
+  const k = String(appKey || '');
+  if (want === 'pet') return PRODUCTS[k] && appOfProduct(PRODUCTS[k]) === 'pet' ? k : null;
+  if (PRODUCTS[k] && appOfProduct(PRODUCTS[k]) === 'legend') return k;
+  const hit = Object.entries(PRODUCTS).find(([, p]) => appOfProduct(p) === 'legend' && p.appKey === k);
+  return hit ? hit[0] : null;
+}
+
 export const DEFAULT_PRODUCT = 'tee';
+export const DEFAULT_LEGEND_PRODUCT = 'legendPoster';
 
 // The product entry, or a clear error. Falls back to the tee when no key is
 // given, which is what keeps the current page working before it knows about
@@ -290,8 +427,12 @@ export function productKeyForWixProductId(wixProductId) {
 }
 
 // What the page needs to build its dropdowns. No Printful IDs leave the server.
-export function productListForPage() {
+// app: 'legend' for Legend Maker's products; left off, Design Your Pet's, so
+// every existing caller gets exactly the list it got before.
+export function productListForPage(app) {
+  const want = app === 'legend' ? 'legend' : 'pet';
   return Object.entries(PRODUCTS)
+    .filter(([, p]) => appOfProduct(p) === want)
     .filter(([, p]) => !String(p.wixProductId).startsWith('PASTE_'))   // hide products not set up yet
     // ...and a product whose Printful variant isn't filled in yet, so it can't
     // be offered before it can be printed.
