@@ -27,7 +27,7 @@ import { startPetDesign } from 'backend/aiDesign.web';
 import { startLegendDesign, LEGEND_PERSONAS } from 'backend/legendDesign.web';
 import { createMockupTask, checkMockupTask } from 'backend/printfulMockup.web';
 import { getDesignRecord } from 'backend/petDesigns';
-import { PRODUCTS, getProduct, productListForPage, printSideFor, printSideForWixProductId, wixProductIdFor, DEFAULT_PRODUCT, DEFAULT_LEGEND_PRODUCT, catalogKeyFor, appOfProduct } from 'backend/productCatalog';
+import { PRODUCTS, getProduct, productListForPage, printSideFor, printSideForWixProductId, wixProductIdFor, DEFAULT_PRODUCT } from 'backend/productCatalog';
 import { findWixVariantId } from 'backend/wixProduct';
 import { PRINTFUL_BASE, printfulHeaders } from 'backend/printfulShared';
 
@@ -98,6 +98,23 @@ function legendPersonaKey(value) {
 function isLegendDesign(d) {
   return !!(d && LEGEND_PERSONAS[d.styleChoice]);
 }
+// Legend Maker's product lookups live here, reading PRODUCTS, rather than
+// being imported. 20 Nov 2026: importing new names from productCatalog.js
+// left this whole file empty on the live site (every export "is not a
+// function"), so this file imports only the names it always has.
+const DEFAULT_LEGEND_PRODUCT = 'legendPoster';
+function appOfProduct(p) {
+  return p && p.app === 'legend' ? 'legend' : 'pet';
+}
+function catalogKeyFor(app, appKey) {
+  const want = app === 'legend' ? 'legend' : 'pet';
+  const k = String(appKey || '');
+  if (want === 'pet') return PRODUCTS[k] && appOfProduct(PRODUCTS[k]) === 'pet' ? k : null;
+  if (PRODUCTS[k] && appOfProduct(PRODUCTS[k]) === 'legend') return k;
+  const hit = Object.entries(PRODUCTS).find(([, p]) => appOfProduct(p) === 'legend' && p.appKey === k);
+  return hit ? hit[0] : null;
+}
+
 // The product a design may be printed on. A Legend Maker design goes only on
 // Legend Maker products, and the app calls them 'tee', 'poster', 'canvas'...
 // A pet design goes only on pet products, looked up exactly as before.
@@ -347,7 +364,7 @@ export async function getProductsForApp(app) {
   return {
     ok: true,
     products,
-    defaultProduct: legend ? PRODUCTS[DEFAULT_LEGEND_PRODUCT].appKey : DEFAULT_PRODUCT,
+    defaultProduct: legend ? ((PRODUCTS[DEFAULT_LEGEND_PRODUCT] || {}).appKey || 'poster') : DEFAULT_PRODUCT,
     styles: isLegendApp(app)
       ? Object.entries(LEGEND_PERSONAS).map(([key, p]) => ({
           key: p.appKey, styleKey: key, label: p.label, allowsText: p.allowsText
