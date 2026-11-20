@@ -68,10 +68,11 @@ const MAX_DESIGNS_SITE_WIDE_PER_HOUR = 180;
 // A second, silent attempt when the first comes out wrong.
 const RETRY_ONCE = true;
 
-// The shape of the artwork. Square for now, because the product previews, the
-// print placement and the app all assume square art. Portrait formats (3:4)
-// are a later step and need product work as well as this setting.
-const ART_ASPECT = '1:1';
+// The shape of the artwork: 3:4 portrait (Don, 19 Nov 2026). At 4K that is
+// about 3584 x 4800 px. It fills the tee front (12 x 16 in), the 3:4
+// posters and the 3:4 canvas. The hoodie front print area is square, so the
+// hoodie's print file fits this art into a square (decided the same day).
+const ART_ASPECT = '3:4';
 
 // The youngest a person in a Legend Maker photo may be.
 const MIN_AGE = 18;
@@ -138,8 +139,9 @@ const HOUSE = `THE HOUSE STYLE. A finished, hand-crafted illustration, drawn
     cream (#D9C8A2), antique gold (#C79A3E), rust (#A85433) and slate
     (#31404C). The person keeps their own true colouring.
 
-    Composition: one finished square design. {EDGE} The person is centred,
-    in the upper two thirds.`;
+    Composition: one finished portrait-format design, three units wide by
+    four tall. {EDGE} The person is centred, with the face in the upper
+    half of the design and the figure filling its width.`;
 
 // THE OUTER EDGE (pinned 16 Nov 2026, after the first live designs). Left to
 // itself the model sometimes set the design on a cream mat, which would print

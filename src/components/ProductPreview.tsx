@@ -4,7 +4,8 @@ import { colorFor, PRODUCTS, ProductChoice } from '../data/catalog';
 import { colors } from '../theme';
 
 // Places the watermarked design on the product, like the canvas previews.
-// Positions are fractions of the square Printful flat mockups: center chest,
+// Positions are fractions of the square Printful flat mockups (the photos are
+// square; the art is 3:4): center chest,
 // between the neckline and the pocket.
 const PLACEMENT = {
   // Matches Don's Printful tee layout (26 Sep): 10.7" wide, 3.2" down.
@@ -30,10 +31,15 @@ export function ProductPreview({ choice, design, size = 220 }: { choice: Product
     const color = colorFor(choice.product, choice.color);
     const p = COLOR_PLACEMENT[`${choice.product}:${choice.color}`] ?? PLACEMENT[choice.product];
     const d = size * p.size;
+    // Legend Maker art is 3:4 portrait. On the tee it prints 3:4, so the box
+    // is taller than wide; the hoodie front is square, so the art is fitted
+    // inside a square, as its print file is.
+    const w = choice.product === 'tee' ? d * 0.86 : d;
+    const h = choice.product === 'tee' ? w * (4 / 3) : d;
     return (
       <View style={{ width: size, height: size }} accessibilityLabel={`Your design on a ${color.name} ${name.toLowerCase()}`}>
         <Image source={color.mockup} style={StyleSheet.absoluteFill} contentFit="contain" />
-        {design ? <Image source={design} style={{ position: 'absolute', width: d, height: d, left: (size - d) / 2, top: size * p.top }} contentFit="contain" /> : null}
+        {design ? <Image source={design} style={{ position: 'absolute', width: w, height: h, left: (size - w) / 2, top: size * p.top }} contentFit="contain" /> : null}
       </View>
     );
   }
