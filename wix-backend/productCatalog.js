@@ -338,10 +338,10 @@ export const PRODUCTS = {
     colors: null,
     sizes: ['12×16'],
     defaultSize: '12×16',
-    // The Printful variant ID is still to be read from Printful's catalog
-    // (GET /_functions/printfulVariants/3). 0 keeps the canvas hidden.
+    // Read from Printful's catalog through GET /_functions/printfulVariants/3
+    // (20 Nov 2026): Canvas (in) 12″×16″ is variant 5.
     variants: {
-      '': { '12×16': 0 }
+      '': { '12×16': 5 }
     },
     placement: 'default',
     // The print file includes the wrap round the sides. The art covers the
