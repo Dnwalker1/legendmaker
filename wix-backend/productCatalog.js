@@ -255,7 +255,7 @@ export const PRODUCTS = {
   legendTee: {
     app: 'legend', appKey: 'tee',
     label: 'T-Shirt',
-    wixProductId: 'PASTE_LEGEND_TEE_ID',                     // "Legend Maker Tee"
+    wixProductId: '66da6886-6d36-4960-b157-0b57af7496e8',   // "Portrait Tee" (Printful store product 496726734)
     printfulProductId: 71,                                   // Bella+Canvas 3001
     colors: ['White', 'Natural', 'Ash', 'Heather Dust', 'Athletic Heather'],
     sizes: ['S', 'M', 'L', 'XL', '2XL', '3XL'],
@@ -281,7 +281,7 @@ export const PRODUCTS = {
   legendHoodie: {
     app: 'legend', appKey: 'hoodie',
     label: 'Hoodie',
-    wixProductId: 'PASTE_LEGEND_HOODIE_ID',                  // "Legend Maker Hoodie"
+    wixProductId: 'd2419863-b3fa-400f-bdca-7dc9d5b269dd',   // "Portrait Hoodie" (Printful store product 496729559)
     printfulProductId: 380,                                  // Cotton Heritage M2580 Premium Pullover
     colors: ['White', 'Bone', 'Oatmeal Heather', 'Khaki', 'Light Pink', 'Lavender',
              'Sky Blue', 'Carolina Blue', 'Carbon Grey'],
@@ -315,7 +315,7 @@ export const PRODUCTS = {
   legendPoster: {
     app: 'legend', appKey: 'poster',
     label: 'Poster',
-    wixProductId: 'PASTE_LEGEND_POSTER_ID',                  // "Legend Maker Poster"
+    wixProductId: 'ff867399-f0ae-4a0e-a504-80bcc84477f8',   // "Portrait Poster" (Printful store product 496733545)
     printfulProductId: 1,                                    // Enhanced Matte Paper Poster (in)
     colors: null,
     // Spelled exactly as the Wix product's Size choices, with the × sign.
@@ -333,7 +333,7 @@ export const PRODUCTS = {
   legendCanvas: {
     app: 'legend', appKey: 'canvas',
     label: 'Canvas',
-    wixProductId: 'PASTE_LEGEND_CANVAS_ID',                  // "Legend Maker Canvas"
+    wixProductId: 'fd935600-bf2b-4690-af43-975d8d76dac9',   // "Portrait Canvas" (Printful store product 496736192)
     printfulProductId: 3,                                    // Canvas (in)
     colors: null,
     sizes: ['12×16'],
