@@ -17,7 +17,7 @@ const REJECT_REASONS: Record<string, string> = {
   too_many: 'There is more than one person in it. Use a photo of just the one person, close up.',
 };
 
-const pawSunset = require('../../assets/images/brand/paw-sunset-icon.webp');
+const pawSunset = require('../../assets/images/brand/star-gold-icon.webp');
 const POLL_MS = 2000;
 const EXPECTED_MS = 60_000;
 

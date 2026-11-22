@@ -8,7 +8,7 @@ import { Body, Button, H1, Screen } from '../components/ui';
 import { useAppState } from '../state/AppState';
 import { colors, fonts } from '../theme';
 
-const pawSunset = require('../../assets/images/brand/paw-sunset-icon.webp');
+const pawSunset = require('../../assets/images/brand/star-gold-icon.webp');
 
 function Step({ n, title, children }: { n: number; title: string; children: string }) {
   return (

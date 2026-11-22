@@ -7,8 +7,8 @@ import { formatClockTime, unlockDay } from '../../lib/limits';
 import { useAppState } from '../../state/AppState';
 import { colors, fonts } from '../../theme';
 
-const pawSunset = require('../../../assets/images/brand/paw-sunset-icon.webp');
-const pawNavy = require('../../../assets/images/brand/paw-navy-icon.webp');
+const pawSunset = require('../../../assets/images/brand/star-gold-icon.webp');
+const pawNavy = require('../../../assets/images/brand/star-navy-icon.webp');
 
 // One route for every problem screen, keyed by the error that triggers it.
 // See docs/app-spec.md > Error states.

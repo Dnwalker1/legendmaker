@@ -11,7 +11,7 @@ import { useLimits } from '../lib/useLimits';
 import { useAppState } from '../state/AppState';
 import { colors, fonts } from '../theme';
 
-const pawNavy = require('../../assets/images/brand/paw-navy-icon.webp');
+const pawNavy = require('../../assets/images/brand/star-navy-icon.webp');
 
 export default function Designs() {
   const { deviceId, setActiveDesign } = useAppState();

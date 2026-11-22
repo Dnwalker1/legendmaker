@@ -28,7 +28,7 @@ import { problemRoute } from "../lib/errorRoute";
 import { useAppState } from "../state/AppState";
 import { colors, fonts } from "../theme";
 
-const pawNavy = require("../../assets/images/brand/paw-navy-icon.webp");
+const pawNavy = require("../../assets/images/brand/star-navy-icon.webp");
 const PRIVACY_URL: string =
   Constants.expoConfig?.extra?.privacyPolicyUrl ??
   "https://www.goodwookie.com/terms-and-conditions";

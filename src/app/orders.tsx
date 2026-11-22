@@ -21,7 +21,7 @@ import { useAppState } from "../state/AppState";
 import { PolicyLinks } from "../components/PolicyLinks";
 import { colors, fonts } from "../theme";
 
-const pawNavy = require("../../assets/images/brand/paw-navy-icon.webp");
+const pawNavy = require("../../assets/images/brand/star-navy-icon.webp");
 const STAGES: { key: OrderStatus; label: string }[] = [
   { key: "in-review", label: "In review" },
   { key: "printing", label: "Printing" },

@@ -7,7 +7,7 @@ import { APP_NAME } from '../brand';
 import { STYLES } from '../data/catalog';
 import { fonts } from '../theme';
 
-const badge = require('../../assets/images/brand/badge-logo.webp');
+const badge = require('../../assets/images/brand/logo-stacked-on-navy.webp');
 
 export default function Welcome() {
   const [monarch, rockstar, moviestar] = STYLES;
@@ -22,7 +22,7 @@ export default function Welcome() {
         </>
       }
     >
-      <Image source={badge} style={styles.badge} contentFit="contain" accessibilityLabel="Goodwookie Productions LLC: Adventure is the destination" />
+      <Image source={badge} style={styles.badge} contentFit="contain" accessibilityLabel={`${APP_NAME} by Goodwookie`} />
       <Pressable style={styles.collage} accessibilityRole="button" accessibilityLabel={`See all ${STYLES.length} legends`} onPress={() => router.push('/styles')}>
         <Image source={rockstar.sample} style={[styles.sample, styles.left]} contentFit="cover" accessibilityLabel={`${rockstar.name} sample`} />
         <Image source={monarch.sample} style={[styles.sample, styles.center]} contentFit="contain" accessibilityLabel={`${monarch.name} sample`} />
@@ -50,7 +50,7 @@ export default function Welcome() {
 }
 
 const styles = StyleSheet.create({
-  badge: { width: 200, height: 182, alignSelf: 'center' },
+  badge: { width: 220, height: 170, alignSelf: 'center' },
   shipping: { fontFamily: fonts.bodyBold, textTransform: 'uppercase', letterSpacing: 0.5 },
   collage: { height: 190, alignItems: 'center', justifyContent: 'center' },
   sample: { position: 'absolute' },
