@@ -84,22 +84,18 @@ export function createMockApi(now: () => number = Date.now): DesignApi {
     async createCheckout(_deviceId, lines: CheckoutLine[]) {
       await wait(300);
       const id = `checkout-${++counter}`;
-      const itemCount = lines.reduce((n, l) => n + (l.kind === 'bundle' ? 4 : l.quantity), 0);
+      const itemCount = lines.reduce((n, l) => n + l.quantity, 0);
       const first = lines[0] && designs.get(lines[0].designId);
       checkouts.set(id, {
         id,
         number: String(++orderNumber),
         createdAt: now(),
         status: 'in-review',
-        title: lines.some((l) => l.kind === 'bundle') ? 'Buy them all bundle' : 'Legend Maker order',
+        title: 'Legend Maker order',
         itemCount,
         totalCents: 0,
         preview: first ? toDesign(first).preview : null,
-        items: lines.map((l) =>
-          l.kind === 'bundle'
-            ? { title: 'Buy them all bundle', detail: 'Tee, hoodie, sticker and poster', quantity: 1 }
-            : { title: l.choice.product, detail: l.choice.size, quantity: l.quantity },
-        ),
+        items: lines.map((l) => ({ title: l.choice.product, detail: l.choice.size, quantity: l.quantity })),
       });
       for (const l of lines) {
         const d = designs.get(l.designId);

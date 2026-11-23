@@ -59,9 +59,9 @@ const STATUS_MAP: Record<
 const time = (v: unknown) => (v ? Date.parse(String(v)) : null);
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// The backend's size names. Only posters differ: "12×12" with a multiplication sign.
+// The backend's size names. Posters and canvases differ: "12×16" with a multiplication sign.
 function backendSize(choice: ProductChoice): string {
-  return choice.product === "poster"
+  return choice.product === "poster" || choice.product === "canvas"
     ? choice.size.replace("x", "×")
     : choice.size;
 }
@@ -163,11 +163,8 @@ function toArtwork(items: Json[]): OrderArtwork[] {
 
 function toOrder(o: Json): Order {
   const items = (o.items as Json[] | undefined) ?? [];
-  const designIds = new Set(items.map((i) => i.previewUrl));
   const title =
-    items.length === 4 && designIds.size === 1
-      ? "Buy them all bundle"
-      : items.length > 1
+    items.length > 1
         ? `${items[0].title} and ${items.length - 1} more`
         : String(items[0]?.title ?? "Your order");
   const firstPreview = items.find((i) => i.previewUrl)?.previewUrl;
@@ -336,10 +333,7 @@ export function createHttpApi(
 
     async createCheckout(deviceId, lines: CheckoutLine[]) {
       const items = lines.flatMap((line) =>
-        (line.kind === "bundle"
-          ? line.choices.map((choice) => ({ choice, quantity: 1 }))
-          : [{ choice: line.choice, quantity: line.quantity }]
-        ).map(({ choice, quantity }) => ({
+        [{ choice: line.choice, quantity: line.quantity }].map(({ choice, quantity }) => ({
           designId: line.designId,
           productKey: choice.product,
           ...("color" in choice ? { color: choice.color } : {}),

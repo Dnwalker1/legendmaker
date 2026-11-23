@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ProductPreview } from '../components/ProductPreview';
 import { Body, Button, Card, Screen, TitleBar } from '../components/ui';
-import { describeChoice, priceCents } from '../data/catalog';
+import { describeChoice } from '../data/catalog';
 import { cartTotals, itemCents } from '../lib/cart';
 import { formatMoney } from '../lib/money';
 import { useAppState } from '../state/AppState';
@@ -25,31 +25,7 @@ export default function Cart() {
       {!cart.length ? <Body>Your cart is empty. That&apos;s fixable. Pick a product for one of your designs.</Body> : null}
 
       {cart.map((item) =>
-        item.kind === 'bundle' ? (
-          <Card key={item.id}>
-            <View style={styles.head}>
-              <View style={styles.thumb}>
-                <ProductPreview choice={item.choices.hoodie} design={item.preview} size={52} />
-              </View>
-              <Text style={styles.title}>Buy them all bundle</Text>
-              <View style={styles.off}>
-                <Text style={styles.offText}>10% OFF</Text>
-              </View>
-            </View>
-            {[item.choices.tee, item.choices.hoodie, item.choices.sticker, item.choices.poster].map((c) => (
-              <View key={c.product} style={styles.line}>
-                <Text style={styles.lineText}>{describeChoice(c)}</Text>
-                <Text style={styles.lineText}>{formatMoney(priceCents(c))}</Text>
-              </View>
-            ))}
-            <View style={styles.line}>
-              <Pressable accessibilityRole="button" onPress={() => removeFromCart(item.id)} hitSlop={10}>
-                <Text style={styles.remove}>Remove</Text>
-              </Pressable>
-              <Text style={styles.itemTotal}>{formatMoney(itemCents(item))}</Text>
-            </View>
-          </Card>
-        ) : (
+        (
           <Card key={item.id} style={styles.single}>
             <View style={styles.thumb}>
               <ProductPreview choice={item.choice} design={item.preview} size={52} />
@@ -93,12 +69,6 @@ export default function Cart() {
             <Text style={styles.sumText}>Items</Text>
             <Text style={styles.sumText}>{formatMoney(totals.itemsCents)}</Text>
           </View>
-          {totals.bundleDiscountCents ? (
-            <View style={styles.line}>
-              <Text style={styles.sumText}>Bundle discount (10%)</Text>
-              <Text style={styles.sumText}>−{formatMoney(totals.bundleDiscountCents)}</Text>
-            </View>
-          ) : null}
           <View style={styles.line}>
             <Text style={styles.sumText}>Shipping</Text>
             <Text style={styles.sumText}>Free in the US</Text>
@@ -111,7 +81,6 @@ export default function Cart() {
             <Text style={styles.totalLabel}>Total</Text>
             <Text style={styles.total}>{formatMoney(totals.totalCents)}</Text>
           </View>
-          {totals.bundleDiscountCents ? <Text style={styles.sumNote}>The bundle discount is applied automatically at checkout.</Text> : null}
         </View>
       ) : null}
     </Screen>

@@ -2,7 +2,6 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Body, Button, Screen, StepHeader } from '../components/ui';
-import { BundleCard } from '../components/BundleCard';
 import { ImageViewer } from '../components/ImageViewer';
 import { ProductPreview } from '../components/ProductPreview';
 import { ReportDesign } from '../components/ReportDesign';
@@ -76,7 +75,6 @@ export default function Result() {
           </Pressable>
         ))}
       </View>
-      <BundleCard />
       <ReportDesign deviceId={deviceId} designId={activeDesign.id} />
     </Screen>
   );

@@ -65,14 +65,12 @@ export type Limits = {
 
 export type PhotoInput = { uri: string; mimeType?: string; fileName?: string };
 
-export type CheckoutLine =
-  | {
-      kind: "single";
-      designId: string;
-      choice: ProductChoice;
-      quantity: number;
-    }
-  | { kind: "bundle"; designId: string; choices: ProductChoice[] };
+export type CheckoutLine = {
+  kind: "single";
+  designId: string;
+  choice: ProductChoice;
+  quantity: number;
+};
 
 export type OrderStatus = "in-review" | "printing" | "shipped" | "delivered";
 

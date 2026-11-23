@@ -41,7 +41,7 @@ export const STYLES: DesignStyle[] = [
     id: 'monarch',
     name: 'The Monarch',
     siteKey: 'legendMonarch',
-    sample: require('../../assets/images/styles/monarch.png'),
+    sample: require('../../assets/images/styles/monarch.webp'),
     blurb: 'Crowned and robed in a grand old-master oil portrait. Long may you reign.',
     allowsText: true,
     textExample: 'KING DON',
@@ -50,7 +50,7 @@ export const STYLES: DesignStyle[] = [
     id: 'rockstar',
     name: 'Rock Star',
     siteKey: 'legendRockStar',
-    sample: require('../../assets/images/styles/rockstar.png'),
+    sample: require('../../assets/images/styles/rockstar.webp'),
     blurb: 'Centre stage under the lights, on the tour poster of a band that only exists for you.',
     allowsText: true,
     textExample: 'DON LIVE',
@@ -59,7 +59,7 @@ export const STYLES: DesignStyle[] = [
     id: 'moviestar',
     name: 'Movie Star',
     siteKey: 'legendMovieStar',
-    sample: require('../../assets/images/styles/moviestar.png'),
+    sample: require('../../assets/images/styles/moviestar.webp'),
     blurb: 'Your name above the title on the poster of a film that was never made.',
     allowsText: true,
     textExample: 'DON WALKER',
@@ -68,7 +68,7 @@ export const STYLES: DesignStyle[] = [
     id: 'champion',
     name: 'The Champion',
     siteKey: 'legendChampion',
-    sample: require('../../assets/images/styles/champion.png'),
+    sample: require('../../assets/images/styles/champion.webp'),
     blurb: 'The hometown hero on a classic sports card, in a uniform nobody else has ever worn.',
     allowsText: true,
     textExample: 'THE CLOSER',
@@ -77,7 +77,7 @@ export const STYLES: DesignStyle[] = [
     id: 'astronaut',
     name: 'Astronaut',
     siteKey: 'legendAstronaut',
-    sample: require('../../assets/images/styles/astronaut.png'),
+    sample: require('../../assets/images/styles/astronaut.webp'),
     blurb: 'Suited up for launch on a mission poster, helmet under one arm.',
     allowsText: true,
     textExample: 'COMMANDER DON',
@@ -86,7 +86,7 @@ export const STYLES: DesignStyle[] = [
     id: 'hero',
     name: 'Action Hero',
     siteKey: 'legendActionHero',
-    sample: require('../../assets/images/styles/hero.png'),
+    sample: require('../../assets/images/styles/hero.webp'),
     blurb: 'The caped hero of your own comic cover, watching over the city.',
     allowsText: true,
     textExample: 'CAPTAIN DON',
@@ -95,7 +95,7 @@ export const STYLES: DesignStyle[] = [
     id: 'outlaw',
     name: 'Western Legend',
     siteKey: 'legendOutlaw',
-    sample: require('../../assets/images/styles/outlaw.png'),
+    sample: require('../../assets/images/styles/outlaw.webp'),
     blurb: 'A weathered frontier poster with your face on it and a reward nobody will collect.',
     allowsText: true,
     textExample: 'DUSTY DON',
@@ -104,7 +104,7 @@ export const STYLES: DesignStyle[] = [
     id: 'chef',
     name: 'Head Chef',
     siteKey: 'legendChef',
-    sample: require('../../assets/images/styles/chef.png'),
+    sample: require('../../assets/images/styles/chef.webp'),
     blurb: 'Whites on, arms folded, at the pass of the finest kitchen in town.',
     allowsText: true,
     textExample: 'CHEF DON',
@@ -113,7 +113,7 @@ export const STYLES: DesignStyle[] = [
     id: 'explorer',
     name: 'Explorer',
     siteKey: 'legendExplorer',
-    sample: require('../../assets/images/styles/explorer.png'),
+    sample: require('../../assets/images/styles/explorer.webp'),
     blurb: 'On a vintage expedition poster, at the top of a mountain with the world below.',
     allowsText: true,
     textExample: 'SUMMIT 2027',
@@ -122,7 +122,7 @@ export const STYLES: DesignStyle[] = [
     id: 'noble',
     name: 'Renaissance Noble',
     siteKey: 'legendNoble',
-    sample: require('../../assets/images/styles/noble.png'),
+    sample: require('../../assets/images/styles/noble.webp'),
     blurb: 'Velvet, lace and candlelight, painted the way the masters painted their patrons.',
     allowsText: false,
   },
@@ -170,8 +170,8 @@ export function styleById(id: StyleId): DesignStyle {
   return style;
 }
 
-export type ProductId = 'tee' | 'hoodie' | 'sticker' | 'poster' | 'ornament' | 'mug';
-export type FlatId = 'sticker' | 'poster' | 'ornament' | 'mug';
+export type ProductId = 'tee' | 'hoodie' | 'poster' | 'canvas';
+export type FlatId = 'poster' | 'canvas';
 export type ApparelSize = 'S' | 'M' | 'L' | 'XL' | '2XL' | '3XL';
 export const APPAREL_SIZES: ApparelSize[] = ['S', 'M', 'L', 'XL', '2XL', '3XL'];
 
@@ -184,6 +184,12 @@ export type ProductColor = { name: string; hex: string; mockup: ImageSourcePropT
  */
 export type PrintSide = 'Front' | 'Back';
 export const PRINT_SIDES: PrintSide[] = ['Front', 'Back'];
+/**
+ * Legend Maker's Wix tee and hoodie have no back-print versions yet (22 Nov
+ * 2026), so the app offers the front only. Turn on once the back-print
+ * products exist in Wix and productCatalog.js.
+ */
+export const BACK_PRINT_OFFERED = false;
 export type FlatSize = { id: string; label: string; priceCents: number };
 
 type ApparelProduct = {
@@ -250,59 +256,36 @@ export const PRODUCTS: Record<ProductId, Product> = {
     priceCents: { S: 5550, M: 5550, L: 5550, XL: 5550, '2XL': 5800, '3XL': 6050 },
     backExtraCents: 700,
   },
-  sticker: {
-    id: 'sticker',
-    kind: 'flat',
-    name: 'Sticker',
-    printfulItem: 'Kiss-cut, bubble-free sticker',
-    description: 'Kiss-cut, bubble-free sticker of your design.',
-    sizes: [
-      { id: '3x3', label: '3″ × 3″', priceCents: 1150 },
-      { id: '4x4', label: '4″ × 4″', priceCents: 1150 },
-      { id: '5.5x5.5', label: '5.5″ × 5.5″', priceCents: 1200 },
-    ],
-  },
+  // Legend Maker art is 3:4, so the poster and canvas are 3:4 too. Size ids
+  // match the website's productCatalog.js (with an x; the app sends ×).
   poster: {
     id: 'poster',
     kind: 'flat',
     name: 'Poster',
-    printfulItem: 'Matte paper poster',
-    description: 'Square matte paper poster of your design.',
+    printfulItem: 'Enhanced matte paper poster',
+    description: 'Museum-quality matte paper poster. Your portrait fills the sheet.',
     sizes: [
-      { id: '12x12', label: '12″ × 12″', priceCents: 2400 },
-      { id: '16x16', label: '16″ × 16″', priceCents: 2850 },
-      { id: '18x18', label: '18″ × 18″', priceCents: 2950 },
+      { id: '12x16', label: '12″ × 16″', priceCents: 2900 },
+      { id: '18x24', label: '18″ × 24″', priceCents: 3600 },
     ],
   },
-  // Added 16 Nov 2026 (first sold on the website 14 Nov). One size each; the
-  // size ids match the website's productCatalog.js exactly.
-  ornament: {
-    id: 'ornament',
+  canvas: {
+    id: 'canvas',
     kind: 'flat',
-    name: 'Ornament',
-    printfulItem: 'Ceramic ornament, circle',
-    description: 'Glossy round ceramic ornament, 2.76″ across, with a gold string. Your design fills the circle.',
-    sizes: [{ id: 'Circle', label: 'Round, 2.76″', priceCents: 1900 }],
-  },
-  mug: {
-    id: 'mug',
-    kind: 'flat',
-    name: 'Mug',
-    printfulItem: 'White glossy mug, 11 oz',
-    description: 'White glossy 11 oz ceramic mug. Your design faces you while you drink; the Goodwookie logo is on the other side.',
-    sizes: [{ id: '11 oz', label: '11 oz', priceCents: 2000 }],
+    name: 'Canvas',
+    printfulItem: 'Canvas, 1.25″ deep',
+    description: 'Stretched canvas, ready to hang. Your portrait covers the front; the sides are white.',
+    sizes: [{ id: '12x16', label: '12″ × 16″', priceCents: 4500 }],
   },
 };
 
-const ALL_PRODUCTS: ProductId[] = ['tee', 'hoodie', 'sticker', 'poster', 'ornament', 'mug'];
+const ALL_PRODUCTS: ProductId[] = ['poster', 'canvas', 'tee', 'hoodie'];
 
 /**
  * Seasonal products, offered only between these month-days (a season may run
- * across New Year). The ornament is sold for Christmas (Don, 14 Nov 2026).
+ * across New Year). Legend Maker has none yet.
  */
-export const SEASONAL_PRODUCTS: Partial<Record<ProductId, { from: string; until: string }>> = {
-  ornament: { from: '11-01', until: '12-31' },
-};
+export const SEASONAL_PRODUCTS: Partial<Record<ProductId, { from: string; until: string }>> = {};
 
 function inSeason(id: ProductId, now: Date): boolean {
   const season = SEASONAL_PRODUCTS[id];
@@ -318,10 +301,6 @@ export function productOrder(now: Date = new Date()): ProductId[] {
 
 /** Kept for anything that wants the list as it is right now. */
 export const PRODUCT_ORDER: ProductId[] = productOrder();
-
-// The bundle discount is an automatic discount in the Wix store. The app only
-// estimates it for display; Wix applies the real one at checkout.
-export const BUNDLE_DISCOUNT = 0.1;
 
 // What a customer picks for one product.
 export type ProductChoice =
@@ -345,7 +324,7 @@ export function priceRange(id: ProductId): [number, number] {
   const product = PRODUCTS[id];
   if (product.kind === 'apparel') {
     const prices = Object.values(product.priceCents);
-    return [Math.min(...prices), Math.max(...prices) + product.backExtraCents];
+    return [Math.min(...prices), Math.max(...prices) + (BACK_PRINT_OFFERED ? product.backExtraCents : 0)];
   }
   const prices = product.sizes.map((s) => s.priceCents);
   return [Math.min(...prices), Math.max(...prices)];
@@ -377,10 +356,8 @@ export function productDescription(choice: ProductChoice): string {
 export const DEFAULT_CHOICES: Record<ProductId, ProductChoice> = {
   tee: { product: 'tee', color: 'White', size: 'L' },
   hoodie: { product: 'hoodie', color: 'Bone', size: 'L' },
-  sticker: { product: 'sticker', size: '4x4' },
-  poster: { product: 'poster', size: '16x16' },
-  ornament: { product: 'ornament', size: 'Circle' },
-  mug: { product: 'mug', size: '11 oz' },
+  poster: { product: 'poster', size: '12x16' },
+  canvas: { product: 'canvas', size: '12x16' },
 };
 
 // ── PRICES FROM THE WEBSITE (added 16 Nov 2026) ─────────────────────────────

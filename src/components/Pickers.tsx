@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { APPAREL_SIZES, ApparelSize, PRODUCTS, ProductChoice } from '../data/catalog';
 import { colors, fonts } from '../theme';
 
-// Colour swatches and size buttons shared by the product and bundle screens.
+// Colour swatches and size buttons shared by the product screen.
 
 export function ColorPicker({ product, value, onChange, swatch = 44 }: { product: 'tee' | 'hoodie'; value: string; onChange: (name: string) => void; swatch?: number }) {
   const p = PRODUCTS[product];

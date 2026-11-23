@@ -2,12 +2,11 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { BackPreview } from '../components/BackPreview';
-import { BundleCard } from '../components/BundleCard';
 import { ImageViewer } from '../components/ImageViewer';
 import { ColorPicker, SizePicker } from '../components/Pickers';
 import { ProductPreview } from '../components/ProductPreview';
 import { Body, Button, Screen, TitleBar } from '../components/ui';
-import { DEFAULT_CHOICES, PRINT_SIDES, PRODUCTS, productOrder, PrintSide, ProductChoice, ProductId, priceCents, productDescription } from '../data/catalog';
+import { BACK_PRINT_OFFERED, DEFAULT_CHOICES, PRINT_SIDES, PRODUCTS, productOrder, PrintSide, ProductChoice, ProductId, priceCents, productDescription } from '../data/catalog';
 import { formatMoney } from '../lib/money';
 import { useAppState } from '../state/AppState';
 import { colors, fonts } from '../theme';
@@ -77,7 +76,7 @@ export default function Product() {
           <ColorPicker product={choice.product} value={choice.color} onChange={(color) => setChoice({ ...choice, color })} />
         </View>
       ) : null}
-      {choice.product === 'tee' || choice.product === 'hoodie' ? (
+      {BACK_PRINT_OFFERED && (choice.product === 'tee' || choice.product === 'hoodie') ? (
         <View style={{ gap: 8 }}>
           <Text style={styles.label}>Design on</Text>
           <View style={styles.sides} accessibilityRole="radiogroup">
@@ -113,7 +112,6 @@ export default function Product() {
         <SizePicker choice={choice} onChange={setChoice} />
       </View>
       <Body style={{ fontSize: 14 }}>{productDescription(choice)} Free shipping to US addresses. Printed on demand; allow a few days plus shipping.</Body>
-      <BundleCard />
     </Screen>
   );
 }

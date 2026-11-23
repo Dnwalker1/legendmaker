@@ -83,11 +83,7 @@ export default function Checkout() {
     setFailed(false);
     setNotPaid(false);
     try {
-      const lines: CheckoutLine[] = cart.map((i) =>
-        i.kind === 'bundle'
-          ? { kind: 'bundle', designId: i.designId, choices: [i.choices.tee, i.choices.hoodie, i.choices.sticker, i.choices.poster] }
-          : { kind: 'single', designId: i.designId, choice: i.choice, quantity: i.quantity },
-      );
+      const lines: CheckoutLine[] = cart.map((i) => ({ kind: 'single', designId: i.designId, choice: i.choice, quantity: i.quantity }));
       const { checkoutId, checkoutUrl } = await api.createCheckout(deviceId, lines);
       setBusy(false);
       if (checkoutUrl === MOCK_CHECKOUT_URL) {
@@ -166,16 +162,10 @@ export default function Checkout() {
         </View>
         {cart.map((i) => (
           <View key={i.id} style={styles.line}>
-            <Text style={styles.text}>{i.kind === 'bundle' ? 'Buy them all bundle' : `${describeChoice(i.choice)}${i.quantity > 1 ? ` × ${i.quantity}` : ''}`}</Text>
+            <Text style={styles.text}>{`${describeChoice(i.choice)}${i.quantity > 1 ? ` × ${i.quantity}` : ''}`}</Text>
             <Text style={styles.text}>{formatMoney(itemCents(i))}</Text>
           </View>
         ))}
-        {totals.bundleDiscountCents ? (
-          <View style={styles.line}>
-            <Text style={styles.muted}>Bundle discount (10%)</Text>
-            <Text style={styles.muted}>−{formatMoney(totals.bundleDiscountCents)}</Text>
-          </View>
-        ) : null}
         <View style={styles.line}>
           <Text style={styles.muted}>Shipping</Text>
           <Text style={styles.muted}>Free in the US · $19.99 elsewhere</Text>

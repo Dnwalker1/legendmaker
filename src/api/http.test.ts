@@ -300,7 +300,7 @@ describe("http api", () => {
     ).rejects.toMatchObject({ code: "CONSENT_NEEDED" });
   });
 
-  it("expands a bundle into checkout items with the backend size names", async () => {
+  it("sends checkout items with the backend size names", async () => {
     const calls = fakeFetch([
       {
         body: {
@@ -311,38 +311,18 @@ describe("http api", () => {
       },
     ]);
     const res = await api().createCheckout(DEVICE, [
-      {
-        kind: "bundle",
-        designId: "d1",
-        choices: [
-          { product: "tee", color: "White", size: "L" },
-          { product: "hoodie", color: "Bone", size: "XL" },
-          { product: "sticker", size: "4x4" },
-          { product: "poster", size: "16x16" },
-        ],
-      },
+      { kind: "single", designId: "d1", choice: { product: "tee", color: "White", size: "L" }, quantity: 1 },
+      { kind: "single", designId: "d1", choice: { product: "poster", size: "18x24" }, quantity: 2 },
+      { kind: "single", designId: "d1", choice: { product: "canvas", size: "12x16" }, quantity: 1 },
     ]);
     expect(res).toEqual({
       checkoutId: "co1",
       checkoutUrl: "https://www.goodwookie.com/checkout?x",
     });
     expect(body(calls[0].init).items).toEqual([
-      {
-        designId: "d1",
-        productKey: "tee",
-        color: "White",
-        size: "L",
-        quantity: 1,
-      },
-      {
-        designId: "d1",
-        productKey: "hoodie",
-        color: "Bone",
-        size: "XL",
-        quantity: 1,
-      },
-      { designId: "d1", productKey: "sticker", size: "4x4", quantity: 1 },
-      { designId: "d1", productKey: "poster", size: "16×16", quantity: 1 },
+      { designId: "d1", productKey: "tee", color: "White", size: "L", quantity: 1 },
+      { designId: "d1", productKey: "poster", size: "18×24", quantity: 2 },
+      { designId: "d1", productKey: "canvas", size: "12×16", quantity: 1 },
     ]);
   });
 

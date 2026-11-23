@@ -29,7 +29,7 @@ type AppState = {
   who: WhoFor | null;
   /** The customer ticked the promise that goes with `who`. Resets when `who` or the photo changes. */
   whoConsent: boolean;
-  /** The design shown on the result, product and bundle screens. */
+  /** The design shown on the result and product screens. */
   activeDesign: Design | null;
   cart: CartItem[];
   /** Goes up each time the website's prices are applied, so price labels redraw. */
