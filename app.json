@@ -61,7 +61,10 @@
       "shippingUrl": "https://www.goodwookie.com/shipping-and-returns",
       "supportEmail": "info@goodwookie.com",
       "router": {},
-      "deleteAccountUrl": "https://www.goodwookie.com/delete-account"
+      "deleteAccountUrl": "https://www.goodwookie.com/delete-account",
+      "eas": {
+        "projectId": "44d7b448-0970-45a1-b240-59c038d9b73e"
+      }
     },
     "owner": "goodwookies-team",
     "runtimeVersion": {
