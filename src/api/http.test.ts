@@ -1,5 +1,5 @@
 import * as FileSystem from "expo-file-system/legacy";
-import { createHttpApi } from "./http";
+import { createHttpApi, phoneSizedUrl } from "./http";
 import { ApiError } from "./types";
 
 jest.mock("expo-file-system/legacy", () => ({
@@ -432,5 +432,14 @@ describe("http api", () => {
         label: "Download artwork 2",
       },
     ]);
+  });
+});
+
+describe("phoneSizedUrl", () => {
+  it("asks Wix for a phone-sized JPEG of a media picture", () => {
+    expect(phoneSizedUrl("https://static.wixstatic.com/media/7924a9_abc~mv2.png")).toBe(
+      "https://static.wixstatic.com/media/7924a9_abc~mv2.png/v1/fit/w_900,h_1200,q_85/preview.jpg",
+    );
+    expect(phoneSizedUrl("https://example.com/a.png")).toBe("https://example.com/a.png");
   });
 });

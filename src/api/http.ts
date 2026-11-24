@@ -66,6 +66,16 @@ function backendSize(choice: ProductChoice): string {
     : choice.size;
 }
 
+/**
+ * A phone-sized copy of a Wix media picture. The preview the website stores
+ * is a 2-3 MB PNG; Wix serves a resized JPEG of it (about 300 KB) when the
+ * address asks for one. Anything that isn't a Wix media address is left as it is.
+ */
+export function phoneSizedUrl(url: string): string {
+  const m = /^(https:\/\/static\.wixstatic\.com\/media\/[^/?#]+\.(?:png|jpe?g|webp))$/i.exec(url);
+  return m ? `${m[1]}/v1/fit/w_900,h_1200,q_85/preview.jpg` : url;
+}
+
 function toDesign(d: Json): Design {
   const mapped = STATUS_MAP[String(d.status ?? "ready")] ?? {
     status: "failed",
@@ -80,7 +90,7 @@ function toDesign(d: Json): Design {
     problem: mapped.problem,
     rejectReason: (d.reason as string | undefined) || undefined,
     createdAt: time(d.createdAt) ?? Date.now(),
-    preview: d.previewUrl ? { uri: String(d.previewUrl) } : null,
+    preview: d.previewUrl ? { uri: phoneSizedUrl(String(d.previewUrl)) } : null,
   };
 }
 
