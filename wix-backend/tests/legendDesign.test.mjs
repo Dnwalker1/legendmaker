@@ -1,8 +1,10 @@
 import fs from 'node:fs';
 let src = fs.readFileSync('/home/claude/legendmaker/wix-backend/legendDesign.web.js','utf8');
 src = src.replace(/import\s*\{([^}]*)\}\s*from\s*'([^']+)';/g, (m, names, mod) => `const {${names.replace(/ as /g, ': ')}} = globalThis.__stubs['${mod}'];`);
+src = src.replace(/import\s+(\w+)\s+from\s*'([^']+)';/g, (m, name, mod) => `const ${name} = globalThis.__stubs['${mod}'].default;`);
+src = src.replace(/import\s*\*\s*as\s+(\w+)\s+from\s*'([^']+)';/g, (m, name, mod) => `const ${name} = globalThis.__stubs['${mod}'];`);
 src = src.replace(/^export /gm, '');
-src += `\nglobalThis.__t = { startLegendDesign, getLegendDesignStatus, getLegendPersonas, legendPersonaKey, buildPrompt, LEGEND_PERSONAS, NO_PERSON_NOTE, MINOR_NOTE, CROWD_NOTE, FAMOUS_NOTE };`;
+src += `\nglobalThis.__t = { startLegendDesign, getLegendDesignStatus, getLegendPersonas, legendPersonaKey, buildPrompt, LEGEND_PERSONAS, NO_PERSON_NOTE, MINOR_NOTE, CROWD_NOTE, FAMOUS_NOTE, getLegendProductChoices, listMyLegendDesigns, getMyLegendAllowance };`;
 const db = new Map(); let seq = 0; let dropFields = false; const deleted = []; const uploads = [];
 let photoVerdict, figureVerdicts, bannerMatches = true;
 const jsonResp = (o, ok = true) => ({ ok, status: ok ? 200 : 500, json: async () => o });
@@ -33,6 +35,14 @@ globalThis.__stubs = {
   'backend/watermark': { watermarkPreview: async (b) => b },
   '@wix/media': { files: { getFileDescriptor: async () => ({ operationStatus: 'READY' }), bulkDeleteFiles: async (ids) => { deleted.push(...ids); } } },
   '@wix/essentials': { auth: { elevate: (f) => f } },
+  'wix-data': { default: { query: () => {
+    const q = { f: {}, eq(k, v) { this.f[k] = v; return this; }, gt() { return this; }, hasSome() { return this; },
+      descending() { return this; }, ascending() { return this; }, limit() { return this; },
+      async find() { return { items: (globalThis.__pageRows || []).filter(r => r.visitorId === this.f.visitorId) }; } };
+    return q; } } },
+  'backend/productCatalog': { DEFAULT_LEGEND_PRODUCT: 'legendPoster', productListForPage: (app) => app === 'legend'
+    ? [{ value: 'legendTee', label: 'T-Shirt' }, { value: 'legendHoodie', label: 'Hoodie' }, { value: 'legendPoster', label: 'Poster' }, { value: 'legendCanvas', label: 'Canvas' }]
+    : [{ value: 'tee', label: 'T-Shirt' }] },
 };
 globalThis.fetch = async () => ({ ok: true, arrayBuffer: async () => Buffer.from('photo'), headers: { get: () => 'image/jpeg' } });
 fs.writeFileSync('/tmp/ld-test.mjs', src); await import('/tmp/ld-test.mjs');
@@ -94,4 +104,17 @@ o = await run(good, { persona: 'outlaw', figures: [{ people: 1, edgeIsDark: fals
 check('edge rule: navy by default, paper for the western', t.buildPrompt('legendChef','','').includes('all four edges') && t.buildPrompt('legendOutlaw','','').includes('pure white') && !t.buildPrompt('legendOutlaw','','').includes('{EDGE}') && !t.buildPrompt('legendOutlaw','','').includes('band of solid ink navy'));
 check('portrait shape asked for', /aspectRatio: ART_ASPECT/.test(src) && /const ART_ASPECT = '3:4'/.test(src) && t.buildPrompt('legendChef','','').includes('four tall'));
 check('prompt without text is pictorial', t.buildPrompt('legendNoble', '', '').includes('entirely pictorial'));
+// The web page's three helpers (24 Nov 2026).
+const pc = await t.getLegendProductChoices();
+check('page products: wall art first, legend only, poster default', pc.ok && pc.products.map(p => p.value).join() === 'legendPoster,legendCanvas,legendTee,legendHoodie' && pc.defaultProduct === 'legendPoster', JSON.stringify(pc));
+const day = new Date(Date.now() - 3 * 3600e3);
+globalThis.__pageRows = [
+  { _id: 'a', visitorId: 'v1', styleChoice: 'legendChef', previewArtUrl: 'https://static.wixstatic.com/media/p.png', generatedArtUrl: 'PRINT', _createdDate: day },
+  { _id: 'b', visitorId: 'v1', styleChoice: 'travelStamp', previewArtUrl: 'https://static.wixstatic.com/media/q.png', _createdDate: day }
+];
+const mine = await t.listMyLegendDesigns('v1');
+check('page tray: legend designs only, no print file', mine.length === 1 && mine[0].styleName === 'Head Chef' && !JSON.stringify(mine).includes('PRINT'), JSON.stringify(mine));
+check('page tray: no visitor, nothing', (await t.listMyLegendDesigns('')).length === 0);
+const al = await t.getMyLegendAllowance('v1');
+check('page allowance counts this browser', al.ok && al.limit === 5 && al.left === 3 && al.nextFreeAt === null, JSON.stringify(al));
 console.log(fails ? `\n${fails} FAILED` : '\nALL PASSED'); process.exit(fails ? 1 : 0);

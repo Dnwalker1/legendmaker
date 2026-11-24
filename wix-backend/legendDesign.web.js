@@ -50,6 +50,11 @@ import {
   toPublicImageUrl
 } from 'backend/petDesigns';
 import { toCheckJpeg, toWebPng, clearOuterWhite } from 'backend/imageTools';
+// For the Legend Maker WEB PAGE (24 Nov 2026). The namespace import can't
+// fail on a missing name: the 20 Nov outage came from a named import that the
+// live productCatalog.js didn't supply, which left a whole file empty.
+import wixData from 'wix-data';
+import * as productCatalog from 'backend/productCatalog';
 import { watermarkPreview } from 'backend/watermark';
 import { files as mediaFiles } from '@wix/media';
 import { auth as mediaAuth } from '@wix/essentials';
@@ -1100,3 +1105,91 @@ async function callGeminiOnce(model, apiKey, body) {
     body: JSON.stringify(body)
   });
 }
+
+
+// ============================================================================
+// THE LEGEND MAKER WEB PAGE (added 24 Nov 2026)
+// ============================================================================
+// Three things the page asks for that the Design Your Pet page gets from
+// other files. Kept here so nothing the pet page uses had to change.
+
+const PAGE_COLLECTION = 'PetDesigns';
+const PAGE_GALLERY_DAYS = 7;
+const PAGE_PRODUCT_ORDER = ['legendPoster', 'legendCanvas', 'legendTee', 'legendHoodie'];
+
+// The Legend Maker products, wall art first, in the shape the page's
+// dropdowns use. Hidden products (not set up in Wix yet) are left out.
+export const getLegendProductChoices = webMethod(Permissions.Anyone, async () => {
+  try {
+    const list = typeof productCatalog.productListForPage === 'function'
+      ? productCatalog.productListForPage('legend') : [];
+    const rank = (k) => { const i = PAGE_PRODUCT_ORDER.indexOf(k); return i < 0 ? 99 : i; };
+    const products = list
+      .filter(p => LEGEND_PRODUCT_KEY.test(String(p.value)))
+      .sort((a, b) => rank(a.value) - rank(b.value))
+      .map(p => ({ ...p, printSides: null, inBundle: false, ownPreview: false }));
+    const wanted = productCatalog.DEFAULT_LEGEND_PRODUCT || 'legendPoster';
+    const defaultProduct = products.some(p => p.value === wanted) ? wanted : ((products[0] && products[0].value) || null);
+    return { ok: true, products, defaultProduct };
+  } catch (e) {
+    console.error(`getLegendProductChoices failed: ${e.message}`);
+    return { ok: false, step: 'products', reason: e.message, products: [], defaultProduct: null };
+  }
+});
+const LEGEND_PRODUCT_KEY = /^legend[A-Z]/;
+
+// This browser's Legend Maker designs from the last 7 days, newest first.
+// Only the watermarked preview leaves the backend, never the print file.
+export const listMyLegendDesigns = webMethod(Permissions.Anyone, async (visitorId) => {
+  try {
+    if (!visitorId) return [];
+    const since = new Date(Date.now() - PAGE_GALLERY_DAYS * 24 * 60 * 60 * 1000);
+    const res = await wixData.query(PAGE_COLLECTION)
+      .eq('visitorId', String(visitorId))
+      .gt('_createdDate', since)
+      .hasSome('status', ['ready', 'flagged', 'ordered'])
+      .descending('_createdDate')
+      .limit(30)
+      .find({ suppressAuth: true });
+    return res.items
+      .filter(d => LEGEND_PERSONAS[d.styleChoice] && d.previewArtUrl)
+      .map(d => ({
+        _id: d._id,
+        styleChoice: d.styleChoice,
+        styleName: LEGEND_PERSONAS[d.styleChoice].label,
+        customText: d.customText || '',
+        previewArtUrl: d.previewArtUrl,
+        createdAt: d._createdDate
+      }));
+  } catch (e) {
+    console.error(`listMyLegendDesigns failed: ${e.message}`);
+    return [];
+  }
+});
+
+// How many of the 5 daily designs this browser has left, and when the next
+// one opens if none are left.
+export const getMyLegendAllowance = webMethod(Permissions.Anyone, async (visitorId) => {
+  try {
+    const limit = MAX_DESIGNS_PER_VISITOR_PER_DAY;
+    if (!visitorId) return { ok: true, limit, left: limit, nextFreeAt: null };
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const res = await wixData.query(PAGE_COLLECTION)
+      .eq('visitorId', String(visitorId))
+      .gt('_createdDate', since)
+      .hasSome('status', ['ready', 'flagged', 'ordered'])
+      .ascending('_createdDate')
+      .limit(50)
+      .find({ suppressAuth: true });
+    const used = res.items.length;
+    const left = Math.max(0, limit - used);
+    const oldest = res.items[0];
+    const nextFreeAt = left === 0 && oldest
+      ? new Date(new Date(oldest._createdDate).getTime() + 24 * 60 * 60 * 1000).toISOString()
+      : null;
+    return { ok: true, limit, left, nextFreeAt };
+  } catch (e) {
+    console.error(`getMyLegendAllowance failed: ${e.message}`);
+    return { ok: false, step: 'allowance', reason: e.message };
+  }
+});
